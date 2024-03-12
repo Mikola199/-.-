@@ -1,0 +1,38 @@
+class DatingChatbot:
+    def __init__(self):
+        self.name = "LoveBot"
+    
+    def greet_user(self):
+        return "Hello! I'm LoveBot. Ready to chat and help you find love!"
+    
+    def ask_interests(self):
+        return "What are your interests? I can match you with like-minded people!"
+    
+    def match_user(self, user_interests):
+        # Match user with similar interests
+        matched_users = ["User1", "User2", "User3"]
+        return matched_users
+    
+    def send_message(self, user, message):
+        return f"Sending message to {user}: {message}"
+    
+# Create an instance of the Dating Chatbot
+love_bot = DatingChatbot()
+
+# Greet the user
+print(love_bot.greet_user())
+
+# Ask for user's interests
+print(love_bot.ask_interests())
+
+# Simulate user interests
+user_interests = ["Music", "Travel", "Food"]
+
+# Match the user based on interests
+matched_users = love_bot.match_user(user_interests)
+print("Matched users:", matched_users)
+
+# Send a message to each matched user
+for user in matched_users:
+    message = "Hi there! Let's chat and see if we have a connection."
+    print(love_bot.send_message(user, message))
