@@ -1,38 +1,26 @@
-class DatingChatbot:
-    def __init__(self):
-        self.name = "LoveBot"
-    
-    def greet_user(self):
-        return "Hello! I'm LoveBot. Ready to chat and help you find love!"
-    
-    def ask_interests(self):
-        return "What are your interests? I can match you with like-minded people!"
-    
-    def match_user(self, user_interests):
-        # Match user with similar interests
-        matched_users = ["User1", "User2", "User3"]
-        return matched_users
-    
-    def send_message(self, user, message):
-        return f"Sending message to {user}: {message}"
-    
-# Create an instance of the Dating Chatbot
-love_bot = DatingChatbot()
+name: Python CI
 
-# Greet the user
-print(love_bot.greet_user())
+on:
+  push:
+    branches: ["**"]
+  pull_request:
 
-# Ask for user's interests
-print(love_bot.ask_interests())
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-# Simulate user interests
-user_interests = ["Music", "Travel", "Food"]
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-# Match the user based on interests
-matched_users = love_bot.match_user(user_interests)
-print("Matched users:", matched_users)
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
 
-# Send a message to each matched user
-for user in matched_users:
-    message = "Hi there! Let's chat and see if we have a connection."
-    print(love_bot.send_message(user, message))
+      - name: Run tests
+        run: pytest -q
