@@ -38,8 +38,8 @@ export default function HomePage() {
 
       <section className="hero">
         <div>
-          <p className="eyebrow">Платформа объявлений нового поколения</p>
-          <h1>Покупайте и продавайте быстрее с AI-помощником</h1>
+          <p className="eyebrow">Современная платформа объявлений</p>
+          <h1>Аврора: покупайте и продавайте быстрее с AI-помощником</h1>
           <p>
             Современный дизайн, удобные фильтры, личный кабинет, сообщения, избранное и умные рекомендации,
             которые повышают конверсию объявлений.
@@ -51,8 +51,8 @@ export default function HomePage() {
             </button>
           </div>
         </div>
-        <div className="hero-stats">
-          <h3>Почему NeoMarket</h3>
+        <div className="hero-stats aurora-bg">
+          <h3>Почему Аврора</h3>
           <ul>
             <li>⚡ SSR + оптимизация для быстрой загрузки и SEO</li>
             <li>🔐 JWT-ready архитектура API</li>
