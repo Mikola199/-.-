@@ -52,7 +52,7 @@ export default function HomePage() {
           </div>
         </div>
         <div className="hero-stats">
-          <h3>Почему NeoMarket</h3>
+          <h3>Почему GLock Connect</h3>
           <ul>
             <li>⚡ SSR + оптимизация для быстрой загрузки и SEO</li>
             <li>🔐 JWT-ready архитектура API</li>
