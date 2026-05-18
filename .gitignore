@@ -35,3 +35,4 @@ google-services.json
 # Node.js dependencies
 node_modules/
 .next/
+*.tsbuildinfo
