@@ -8,9 +8,9 @@ export function Header() {
 
   return (
     <header className="header">
-      <div className="logo">NeoMarket</div>
+      <div className="logo">NeoJob</div>
       <nav>
-        <Link href="#catalog">Каталог</Link>
+        <Link href="#catalog">Вакансии</Link>
         <Link href="#features">Возможности</Link>
         <Link href="#dashboard">Кабинет</Link>
       </nav>

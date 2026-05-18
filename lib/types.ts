@@ -1,13 +1,18 @@
-export type Category = 'Авто' | 'Недвижимость' | 'Техника' | 'Услуги' | 'Хобби';
+export type Category = 'IT' | 'Маркетинг' | 'Продажи' | 'Медицина' | 'Строительство';
+
+export type ListingType = 'Вакансия' | 'Резюме';
 
 export interface Listing {
   id: string;
   title: string;
   description: string;
-  price: number;
+  price: number; // Salary or expected salary
   city: string;
   category: Category;
-  seller: string;
+  type: ListingType;
+  company?: string;
+  experience: string;
+  seller: string; // Recruiter or Job Seeker name
   rating: number;
   image: string;
   createdAt: string;
