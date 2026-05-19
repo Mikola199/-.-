@@ -15,15 +15,17 @@ export function ListingCard({ listing, onFavorite }: Props) {
       <div className="card-body">
         <div className="card-meta">
           <span>{listing.category}</span>
-          <span>AI score: {listing.aiScore}</span>
+          <span>{listing.type === 'vacancy' ? 'Вакансия' : 'Резюме'}</span>
+          <span>AI Match: {listing.aiScore}%</span>
         </div>
         <h3>{listing.title}</h3>
         <p>{listing.description}</p>
         <div className="card-footer">
-          <strong>{listing.price.toLocaleString('ru-RU')} ₽</strong>
+          <strong>Зарплата: {listing.price.toLocaleString('ru-RU')} ₽</strong>
           <span>{listing.city}</span>
         </div>
         <div className="card-footer">
+          <span>{listing.author}</span>
           <span>⭐ {listing.rating}</span>
           <button type="button" className="ghost-button" onClick={() => onFavorite(listing.id)}>
             В избранное

@@ -7,13 +7,14 @@ import { aiGenerateDescription, aiModerateListing, aiRecommend, aiSuggestCategor
 import { demoProfile, listings } from '@/lib/mockData';
 import { Category } from '@/lib/types';
 
-const categories: Array<Category | 'Все'> = ['Все', 'Авто', 'Недвижимость', 'Техника', 'Услуги', 'Хобби'];
+const categories: Array<Category | 'Все'> = ['Все', 'IT', 'Продажи', 'Маркетинг', 'Медицина', 'Дизайн', 'Строительство'];
 
 export default function HomePage() {
   const [query, setQuery] = useState('');
   const [city, setCity] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | 'Все'>('Все');
+  const [selectedType, setSelectedType] = useState<'all' | 'vacancy' | 'resume'>('all');
   const [favorites, setFavorites] = useState<string[]>([]);
   const [titleDraft, setTitleDraft] = useState('');
 
@@ -23,13 +24,14 @@ export default function HomePage() {
       const cityMatch = city ? item.city.toLowerCase().includes(city.toLowerCase()) : true;
       const categoryMatch = selectedCategory === 'Все' || item.category === selectedCategory;
       const priceMatch = maxPrice ? item.price <= Number(maxPrice) : true;
-      return queryMatch && cityMatch && categoryMatch && priceMatch;
+      const typeMatch = selectedType === 'all' || item.type === selectedType;
+      return queryMatch && cityMatch && categoryMatch && priceMatch && typeMatch;
     });
-  }, [query, city, selectedCategory, maxPrice]);
+  }, [query, city, selectedCategory, maxPrice, selectedType]);
 
-  const recommendations = useMemo(() => aiRecommend(listings, demoProfile.city, ['Авто', 'Техника']), []);
+  const recommendations = useMemo(() => aiRecommend(listings, demoProfile.city, ['IT', 'Дизайн']), []);
   const aiCategory = titleDraft ? aiSuggestCategory(titleDraft) : '—';
-  const generatedDescription = titleDraft ? aiGenerateDescription(titleDraft) : 'Введите заголовок';
+  const generatedDescription = titleDraft ? aiGenerateDescription(titleDraft) : 'Введите название должности';
   const moderation = aiModerateListing(titleDraft);
 
   return (
@@ -38,37 +40,37 @@ export default function HomePage() {
 
       <section className="hero">
         <div>
-          <p className="eyebrow">Платформа объявлений нового поколения</p>
-          <h1>Покупайте и продавайте быстрее с AI-помощником</h1>
+          <p className="eyebrow">Кадровое агентство нового поколения</p>
+          <h1>Найдите работу мечты или идеального сотрудника с AI</h1>
           <p>
-            Современный дизайн, удобные фильтры, личный кабинет, сообщения, избранное и умные рекомендации,
-            которые повышают конверсию объявлений.
+            NeoJob использует искусственный интеллект для быстрого поиска работы и подбора персонала.
+            Умные рекомендации, авто-генерация описаний и мгновенная модерация.
           </p>
           <div className="hero-cta">
-            <button type="button">Разместить объявление</button>
+            <button type="button">Опубликовать вакансию</button>
             <button type="button" className="ghost-button">
-              Открыть сообщения
+              Разместить резюме
             </button>
           </div>
         </div>
         <div className="hero-stats">
-          <h3>Почему NeoMarket</h3>
+          <h3>Преимущества NeoJob</h3>
           <ul>
-            <li>⚡ SSR + оптимизация для быстрой загрузки и SEO</li>
-            <li>🔐 JWT-ready архитектура API</li>
-            <li>🤖 AI-модерация, рекомендации и автокатегоризация</li>
-            <li>📱 Адаптивный интерфейс под все устройства</li>
+            <li>⚡ Быстрый отклик и связь с работодателем</li>
+            <li>🔐 Безопасность и проверка компаний</li>
+            <li>🤖 AI-подбор подходящих вакансий</li>
+            <li>📱 Удобный поиск по городам и категориям</li>
           </ul>
         </div>
       </section>
 
       <section id="catalog" className="panel">
-        <h2>Каталог объявлений</h2>
+        <h2>Поиск вакансий и кандидатов</h2>
         <div className="filters">
-          <input placeholder="Поиск" value={query} onChange={(event) => setQuery(event.target.value)} />
+          <input placeholder="Должность или навык" value={query} onChange={(event) => setQuery(event.target.value)} />
           <input placeholder="Город" value={city} onChange={(event) => setCity(event.target.value)} />
           <input
-            placeholder="Цена до"
+            placeholder="Зарплата до"
             type="number"
             value={maxPrice}
             onChange={(event) => setMaxPrice(event.target.value)}
@@ -77,6 +79,11 @@ export default function HomePage() {
             {categories.map((category) => (
               <option key={category}>{category}</option>
             ))}
+          </select>
+          <select value={selectedType} onChange={(event) => setSelectedType(event.target.value as 'all' | 'vacancy' | 'resume')}>
+            <option value="all">Все типы</option>
+            <option value="vacancy">Вакансии</option>
+            <option value="resume">Резюме</option>
           </select>
         </div>
         <div className="grid">
@@ -92,28 +99,28 @@ export default function HomePage() {
 
       <section id="features" className="split">
         <div className="panel">
-          <h2>AI-инструменты для продавца</h2>
+          <h2>AI-инструменты для HR и соискателей</h2>
           <label>
-            Черновик заголовка
+            Черновик должности
             <input
-              placeholder="Например: iPhone 15 Pro 256GB"
+              placeholder="Например: Frontend разработчик"
               value={titleDraft}
               onChange={(event) => setTitleDraft(event.target.value)}
             />
           </label>
           <p>
-            Определенная категория: <strong>{aiCategory}</strong>
+            Предложенная категория: <strong>{aiCategory}</strong>
           </p>
           <p>{generatedDescription}</p>
           <p className={moderation.approved ? 'success' : 'danger'}>{moderation.reason}</p>
         </div>
 
         <div className="panel">
-          <h2>AI-рекомендации</h2>
+          <h2>Рекомендовано для вас</h2>
           <ul className="recommendations">
             {recommendations.map((item) => (
               <li key={item.id}>
-                <span>{item.title}</span>
+                <span>{item.title} ({item.type === 'vacancy' ? 'Вакансия' : 'Резюме'})</span>
                 <strong>{item.price.toLocaleString('ru-RU')} ₽</strong>
               </li>
             ))}
@@ -130,14 +137,14 @@ export default function HomePage() {
             <p>Город: {demoProfile.city}</p>
           </div>
           <div>
-            <p>Активных объявлений: {demoProfile.listingsCount}</p>
+            <p>Ваших публикаций: {demoProfile.listingsCount}</p>
             <p>Избранных: {favorites.length || demoProfile.favoritesCount}</p>
-            <p>Рейтинг продавца: ⭐ {demoProfile.sellerRating}</p>
+            <p>Рейтинг: ⭐ {demoProfile.rating}</p>
           </div>
           <div>
-            <h4>Сообщения и уведомления</h4>
-            <p>Новых сообщений: 3</p>
-            <p>Уведомлений: 5</p>
+            <h4>Отклики и сообщения</h4>
+            <p>Новых откликов: 3</p>
+            <p>Непрочитанных сообщений: 5</p>
           </div>
         </div>
       </section>
