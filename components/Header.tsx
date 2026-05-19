@@ -8,10 +8,10 @@ export function Header() {
 
   return (
     <header className="header">
-      <div className="logo">NeoMarket</div>
+      <div className="logo">NeoJob</div>
       <nav>
-        <Link href="#catalog">Каталог</Link>
-        <Link href="#features">Возможности</Link>
+        <Link href="#catalog">Вакансии и Резюме</Link>
+        <Link href="#features">AI-Рекрутинг</Link>
         <Link href="#dashboard">Кабинет</Link>
       </nav>
       <button onClick={toggleTheme} className="ghost-button" type="button">

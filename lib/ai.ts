@@ -1,11 +1,12 @@
 import { Category, Listing } from './types';
 
 const keywordMap: Record<Category, string[]> = {
-  Авто: ['авто', 'машин', 'tesla', 'bmw', 'kia', 'toyota'],
-  Недвижимость: ['квартира', 'дом', 'ипотека', 'комната', 'апартаменты'],
-  Техника: ['ноутбук', 'смартфон', 'macbook', 'айфон', 'камера'],
-  Услуги: ['услуга', 'ремонт', 'дизайн', 'репетитор', 'монтаж'],
-  Хобби: ['велосипед', 'гитара', 'коллекция', 'настол', 'спорт']
+  IT: ['developer', 'программист', 'react', 'python', 'frontend', 'backend', 'разработчик'],
+  Продажи: ['продаж', 'sales', 'клиент', 'менеджер', 'торговый'],
+  Маркетинг: ['маркетолог', 'marketing', 'smm', 'трафик', 'реклама'],
+  Медицина: ['врач', 'терапевт', 'медсестра', 'клиника', 'доктор'],
+  Дизайн: ['дизайнер', 'design', 'ux', 'ui', 'художник'],
+  Строительство: ['инженер', 'строитель', 'прораб', 'монтажник', 'архитектор']
 };
 
 export function aiSuggestCategory(input: string): Category {
@@ -15,27 +16,27 @@ export function aiSuggestCategory(input: string): Category {
       return category;
     }
   }
-  return 'Услуги';
+  return 'IT';
 }
 
 export function aiGenerateDescription(title: string): string {
-  return `AI-описание: ${title}. Товар прошел автоанализ, рекомендован к публикации. Добавьте детали о состоянии, комплектации и сроках доставки.`;
+  return `AI-описание вакансии: ${title}. Ищем целеустремленного специалиста. Мы предлагаем конкурентную зарплату, дружный коллектив и возможности для роста.`;
 }
 
 export function aiModerateListing(text: string): { approved: boolean; reason: string } {
-  const bannedWords = ['скам', 'обман'];
+  const bannedWords = ['крипта', 'пирамида', 'казино'];
   const found = bannedWords.find((word) => text.toLowerCase().includes(word));
   if (found) {
-    return { approved: false, reason: `Найдено подозрительное слово: ${found}` };
+    return { approved: false, reason: `Объявление отклонено. Найдено запрещенное слово: ${found}` };
   }
   return { approved: true, reason: 'Объявление прошло AI-модерацию.' };
 }
 
-export function aiRecommend(listingPool: Listing[], city: string, favorites: string[]): Listing[] {
+export function aiRecommend(listingPool: Listing[], city: string, favoriteCategories: string[]): Listing[] {
   return listingPool
     .map((listing) => ({
       listing,
-      score: listing.aiScore + (listing.city === city ? 6 : 0) + (favorites.includes(listing.category) ? 10 : 0)
+      score: listing.aiScore + (listing.city === city ? 15 : 0) + (favoriteCategories.includes(listing.category) ? 20 : 0)
     }))
     .sort((a, b) => b.score - a.score)
     .slice(0, 6)

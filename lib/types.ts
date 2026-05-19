@@ -1,13 +1,14 @@
-export type Category = 'Авто' | 'Недвижимость' | 'Техника' | 'Услуги' | 'Хобби';
+export type Category = 'IT' | 'Продажи' | 'Маркетинг' | 'Медицина' | 'Дизайн' | 'Строительство';
 
 export interface Listing {
   id: string;
+  type: 'vacancy' | 'resume';
   title: string;
   description: string;
-  price: number;
+  price: number; // For salary
   city: string;
   category: Category;
-  seller: string;
+  author: string; // Changed from seller
   rating: number;
   image: string;
   createdAt: string;
@@ -21,5 +22,5 @@ export interface UserProfile {
   city: string;
   listingsCount: number;
   favoritesCount: number;
-  sellerRating: number;
+  rating: number; // Changed from sellerRating
 }
