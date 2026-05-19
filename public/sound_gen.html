@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генератор Случайных Звуков</title>
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --accent-color: #4a90e2;
+            --stop-color: #e74c3c;
+            --active-color: #2ecc71;
+            --inactive-color: #95a5a6;
+            --panel-bg: #fff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: var(--panel-bg);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 { margin-bottom: 30px; font-size: 24px; }
+
+        .status-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: var(--inactive-color);
+            transition: background-color 0.3s;
+        }
+        .status-indicator.active { background-color: var(--active-color); }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        button {
+            min-width: 120px;
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+            color: white;
+        }
+        button:hover { opacity: 0.9; }
+        button:active { transform: scale(0.98); }
+
+        #generate-btn { background-color: var(--accent-color); }
+        #stop-btn { background-color: var(--stop-color); }
+        #resume-btn { background-color: var(--active-color); }
+
+        .autoplay-container {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            user-select: none;
+        }
+
+        .params-panel {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: left;
+        }
+
+        .params-panel h2 { font-size: 18px; margin-top: 0; margin-bottom: 15px; }
+        .param-item { margin-bottom: 8px; font-family: 'Courier New', Courier, monospace; }
+        .param-label { font-weight: bold; color: #555; }
+
+        @media (max-width: 480px) {
+            .container { padding: 20px; }
+            .controls { flex-direction: column; }
+            button { width: 100%; min-width: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Звуковой Генератор</h1>
+
+        <div class="status-container">
+            <span id="status-dot" class="status-indicator"></span>
+            <span id="status-text">ОСТАНОВЛЕН</span>
+        </div>
+
+        <div class="controls">
+            <button id="resume-btn">Запустить Аудио</button>
+            <button id="generate-btn">Генерировать</button>
+            <button id="stop-btn">Стоп</button>
+        </div>
+
+        <div class="autoplay-container">
+            <input type="checkbox" id="autoplay-check">
+            <label for="autoplay-check">Автовоспроизведение (2-5 сек)</label>
+        </div>
+
+        <div class="params-panel">
+            <h2>Текущие параметры:</h2>
+            <div class="param-item"><span class="param-label">Тип волны:</span> <span id="param-type">-</span></div>
+            <div class="param-item"><span class="param-label">Частота:</span> <span id="param-freq">-</span> Гц</div>
+            <div class="param-item"><span class="param-label">Длительность:</span> <span id="param-dur">-</span> сек</div>
+            <div class="param-item"><span class="param-label">Громкость:</span> <span id="param-vol">-</span></div>
+        </div>
+    </div>
+
+    <script>
+        let audioCtx;
+        let currentSource = null;
+        let currentGainNode = null;
+        let autoplayTimeout = null;
+
+        const waveTypes = ['sine', 'square', 'sawtooth', 'triangle', 'white-noise'];
+
+        const ui = {
+            statusDot: document.getElementById('status-dot'),
+            statusText: document.getElementById('status-text'),
+            generateBtn: document.getElementById('generate-btn'),
+            stopBtn: document.getElementById('stop-btn'),
+            resumeBtn: document.getElementById('resume-btn'),
+            autoplayCheck: document.getElementById('autoplay-check'),
+            paramType: document.getElementById('param-type'),
+            paramFreq: document.getElementById('param-freq'),
+            paramDur: document.getElementById('param-dur'),
+            paramVol: document.getElementById('param-vol')
+        };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        ui.resumeBtn.addEventListener('click', () => {
+            initAudio();
+            ui.resumeBtn.style.display = 'none';
+        });
+
+        ui.generateBtn.addEventListener('click', () => {
+            initAudio();
+            randomSound();
+        });
+
+        ui.stopBtn.addEventListener('click', () => {
+            stopSound();
+        });
+
+        ui.autoplayCheck.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                initAudio();
+                startAutoplay();
+            } else {
+                stopAutoplay();
+            }
+        });
+
+        function createWhiteNoise() {
+            const bufferSize = 2 * audioCtx.sampleRate;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+            const whiteNoiseSource = audioCtx.createBufferSource();
+            whiteNoiseSource.buffer = noiseBuffer;
+            whiteNoiseSource.loop = true;
+            return whiteNoiseSource;
+        }
+
+        function playSound(type, frequency, duration, volume) {
+            if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+
+            stopSound(0.05); // Плавная остановка предыдущего звука
+
+            currentGainNode = audioCtx.createGain();
+            // Начало с нуля для предотвращения щелчка
+            currentGainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            currentGainNode.gain.exponentialRampToValueAtTime(volume, audioCtx.currentTime + 0.05);
+
+            if (type === 'white-noise') {
+                currentSource = createWhiteNoise();
+            } else {
+                currentSource = audioCtx.createOscillator();
+                currentSource.type = type;
+                currentSource.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            }
+
+            currentSource.connect(currentGainNode);
+            currentGainNode.connect(audioCtx.destination);
+
+            currentSource.start();
+
+            // Обновление UI
+            ui.statusDot.classList.add('active');
+            ui.statusText.innerText = 'ИГРАЕТ';
+            ui.paramType.innerText = type;
+            ui.paramFreq.innerText = type === 'white-noise' ? 'N/A' : Math.round(frequency);
+            ui.paramDur.innerText = duration.toFixed(2);
+            ui.paramVol.innerText = volume.toFixed(2);
+
+            // Плавное затухание в конце
+            const fadeOutStart = audioCtx.currentTime + duration - 0.05;
+            currentGainNode.gain.setValueAtTime(volume, fadeOutStart > audioCtx.currentTime ? fadeOutStart : audioCtx.currentTime);
+            currentGainNode.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+            currentSource.stop(audioCtx.currentTime + duration);
+
+            const thisSource = currentSource;
+            currentSource.onended = () => {
+                if (currentSource === thisSource) {
+                    ui.statusDot.classList.remove('active');
+                    ui.statusText.innerText = 'ОСТАНОВЛЕН';
+                }
+            };
+        }
+
+        function stopSound(fadeTime = 0.1) {
+            if (currentSource && currentGainNode) {
+                const now = audioCtx.currentTime;
+                currentGainNode.gain.cancelScheduledValues(now);
+                currentGainNode.gain.setValueAtTime(currentGainNode.gain.value, now);
+                currentGainNode.gain.exponentialRampToValueAtTime(0.0001, now + fadeTime);
+
+                const oldSource = currentSource;
+                currentSource = null;
+                setTimeout(() => {
+                    try { oldSource.stop(); } catch(e) {}
+                }, fadeTime * 1000);
+
+                ui.statusDot.classList.remove('active');
+                ui.statusText.innerText = 'ОСТАНОВЛЕН';
+            }
+        }
+
+        function randomSound() {
+            if (!audioCtx) initAudio();
+
+            const type = waveTypes[Math.floor(Math.random() * waveTypes.length)];
+            const frequency = Math.random() * (2000 - 50) + 50;
+            const duration = Math.random() * (3 - 0.1) + 0.1;
+            const volume = Math.random() * (0.8 - 0.1) + 0.1;
+
+            playSound(type, frequency, duration, volume);
+        }
+
+        function startAutoplay() {
+            function next() {
+                if (!ui.autoplayCheck.checked) return;
+                randomSound();
+                const nextInterval = Math.random() * (5000 - 2000) + 2000;
+                autoplayTimeout = setTimeout(next, nextInterval);
+            }
+            next();
+        }
+
+        function stopAutoplay() {
+            clearTimeout(autoplayTimeout);
+            autoplayTimeout = null;
+        }
+    </script>
+</body>
+</html>
