@@ -1,32 +1,39 @@
-# NeoMarket
+# NeoSuperApp 🚀
 
-Современная платформа объявлений в стиле Avito, реализованная на **Next.js + TypeScript** с акцентом на UX, производительность и AI-функции.
+Enterprise-grade SuperApp ecosystem combining the power of **Telegram**, **Avito**, and **WhatsApp**.
 
-## Что реализовано
+## Modules
+- **Messenger:** Realtime messaging with WebSocket support (Go-based).
+- **Marketplace:** Scalable platform for listings with AI-enhanced discovery.
+- **Jobs:** Integrated recruitment platform for vacancies and resumes.
+- **AI Ecosystem:** Automated moderation and personalized recommendations.
 
-- Минималистичный адаптивный UI с карточками, крупными изображениями, анимациями и поддержкой светлой/тёмной темы.
-- Каталог объявлений с поиском и фильтрами (поиск, город, категория, цена).
-- Личный кабинет (метрики, сообщения, уведомления, избранное).
-- Демонстрация ключевых AI-функций:
-  - AI-рекомендации объявлений.
-  - AI-модерация текста.
-  - AI-автокатегоризация.
-  - AI-генерация описания.
-- API-слой (Route Handlers): auth/login/register, listings, messages, favorites, notifications.
-- JWT-ready авторизация (демо-подпись/проверка токена в `lib/auth.ts`).
+## Architecture
+- **Monorepo:** Managed with npm workspaces.
+- **Microservices:** Multi-language backend (Python, Go, Node.js).
+- **Frontend:** Next.js 14 (App Router) + TypeScript.
+- **Infrastructure:** Docker Compose & Kubernetes ready.
 
-## Технологии
+## Project Structure
+- `apps/web`: Next.js frontend and API Gateway.
+- `services/auth-service`: FastAPI authentication service.
+- `services/market-service`: Express marketplace service.
+- `services/chat-service`: Go WebSocket chat service.
+- `services/ai-service`: FastAPI AI tools.
+- `infrastructure/`: Docker and Kubernetes configurations.
 
-- **Frontend:** Next.js 14, React 18, TypeScript
-- **Backend API:** Next.js Route Handlers (Node runtime)
-- **База данных:** подготовлено для интеграции с PostgreSQL/MongoDB через слой API
-- **Авторизация:** JWT (в демо виде)
+## Getting Started
 
-## Запуск
-
+### Local Development
 ```bash
 npm install
-npm run dev
+npm run dev --prefix apps/web
+```
+
+### Docker Orchestration
+```bash
+cd infrastructure/docker
+docker-compose up --build
 ```
 
 Откройте: `http://localhost:3000`

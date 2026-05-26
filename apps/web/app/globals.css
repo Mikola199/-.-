@@ -94,6 +94,18 @@ body {
   gap: 0.7rem;
 }
 
+.superapp-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.superapp-nav button.active {
+  background: var(--accent);
+  color: white;
+}
+
 button,
 select,
 input {
