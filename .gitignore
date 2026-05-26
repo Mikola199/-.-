@@ -31,3 +31,8 @@ google-services.json
 
 # Android Profiling
 *.hprof
+
+# Node modules
+node_modules/
+.next/
+dist/
