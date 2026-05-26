@@ -23,3 +23,19 @@ export interface UserProfile {
   favoritesCount: number;
   sellerRating: number;
 }
+
+export interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: string;
+}
+
+export interface Job {
+  id: string;
+  title: string;
+  company: string;
+  salary: string;
+  location: string;
+  type: 'vacancy' | 'resume';
+}

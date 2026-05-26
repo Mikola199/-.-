@@ -1,0 +1,47 @@
+services:
+  web:
+    build:
+      context: ../../apps/web
+    ports:
+      - "3000:3000"
+    environment:
+      - JWT_SECRET=dev-secret
+
+  auth-service:
+    build:
+      context: ../../services/auth-service
+    ports:
+      - "8001:8001"
+    environment:
+      - JWT_SECRET=dev-secret
+
+  market-service:
+    build:
+      context: ../../services/market-service
+    ports:
+      - "8002:8002"
+
+  chat-service:
+    build:
+      context: ../../services/chat-service
+    ports:
+      - "8003:8003"
+
+  ai-service:
+    build:
+      context: ../../services/ai-service
+    ports:
+      - "8004:8004"
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: superapp
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
