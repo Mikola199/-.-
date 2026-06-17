@@ -35,3 +35,20 @@ google-services.json
 # Node.js dependencies
 node_modules/
 .next/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env/
+
+# C++
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+websocket-core
