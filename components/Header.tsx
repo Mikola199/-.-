@@ -8,7 +8,7 @@ export function Header() {
 
   return (
     <header className="header">
-      <div className="logo">NeoMarket</div>
+      <div className="logo">EQUHUB</div>
       <nav>
         <Link href="#catalog">Каталог</Link>
         <Link href="#features">Возможности</Link>
