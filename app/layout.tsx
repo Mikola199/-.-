@@ -2,8 +2,8 @@ import './globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
 
 export const metadata = {
-  title: 'NeoMarket — современная платформа объявлений',
-  description: 'Маркетплейс нового поколения с AI-рекомендациями, модерацией и удобным UX.'
+  title: 'EQUHUB — Единая цифровая платформа',
+  description: 'Масштабируемая цифровая платформа, объединяющая социальную сеть, мессенджер, маркетплейс, вакансии, безопасные сделки и AI-ассистента.'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
