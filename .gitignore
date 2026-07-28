@@ -35,3 +35,7 @@ google-services.json
 # Node.js dependencies
 node_modules/
 .next/
+
+# Python cache files
+__pycache__/
+*.pyc
