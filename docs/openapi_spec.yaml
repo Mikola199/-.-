@@ -1,0 +1,758 @@
+openapi: 3.0.3
+info:
+  title: EQUHUB API Specification
+  description: Полная техническая спецификация API Единой цифровой платформы EQUHUB. Описывает эндпоинты авторизации, управления профилями, новостной ленты, чатов, маркетплейса, раздела "Работа" (вакансии и резюме) и AI-инструментов в соответствии с Разделом 10 SRS.
+  version: 1.0.0
+servers:
+  - url: https://api.equhub.ru/api/v1
+    description: Production Сервер (через API Gateway)
+  - url: http://localhost:8000/api/v1
+    description: Локальный сервер разработки
+paths:
+
+  # ------------------ АВТОРИЗАЦИЯ ------------------
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - first_name
+                - last_name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  minLength: 8
+                  example: "securePassword123!"
+                first_name:
+                  type: string
+                  example: Екатерина
+                last_name:
+                  type: string
+                  example: Смирнова
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  message:
+                    type: string
+                    example: Регистрация успешна. Подтвердите ваш email.
+        '400':
+          description: Ошибка валидации или пользователь уже существует
+
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя и получение JWT-токенов
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  example: "securePassword123!"
+      responses:
+        '200':
+          description: Успешная авторизация, выданы JWT токены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  refresh_token:
+                    type: string
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    example: 900
+        '401':
+          description: Неверный логин или пароль
+
+  /auth/logout:
+    post:
+      summary: Выход из системы, аннулирование текущего токена
+      tags:
+        - Auth
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешный выход
+
+  /auth/refresh:
+    post:
+      summary: Обновление пары JWT токенов по Refresh токену
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refresh_token
+              properties:
+                refresh_token:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      responses:
+        '200':
+          description: Токены успешно обновлены
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                  refresh_token:
+                    type: string
+                  token_type:
+                    type: string
+                    example: bearer
+
+  # ------------------ ПОЛЬЗОВАТЕЛИ ------------------
+  /users:
+    get:
+      summary: Получить список пользователей платформы с фильтрами
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Поисковый запрос по имени/фамилии
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по городу
+      responses:
+        '200':
+          description: Список пользователей получен
+
+  /users/{id}:
+    get:
+      summary: Получить подробный профиль пользователя по ID
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Данные профиля получены
+        '404':
+          description: Пользователь не найден
+
+    patch:
+      summary: Частичное обновление собственного профиля
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                bio:
+                  type: string
+                  example: "Фронтенд-разработчик Next.js 14"
+                city:
+                  type: string
+                  example: "Москва"
+                interests:
+                  type: array
+                  items:
+                    type: string
+                  example: ["IT", "Design", "Flutter"]
+      responses:
+        '200':
+          description: Профиль успешно обновлен
+
+  # ------------------ ЛЕНТА (СОЦСЕТЬ) ------------------
+  /feed:
+    get:
+      summary: Получить персональную ленту публикаций
+      tags:
+        - Feed
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Список постов успешно возвращен
+
+  /posts:
+    post:
+      summary: Создать новую публикацию в социальной сети
+      tags:
+        - Feed
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  example: "Опубликовала свежие вакансии от EQUHUB Tech в нашем новом встроенном разделе Работа!"
+                media_urls:
+                  type: array
+                  items:
+                    type: string
+                  example: ["https://images.unsplash.com/..."]
+                hashtags:
+                  type: array
+                  items:
+                    type: string
+                  example: ["IT", "Jobs", "Flutter"]
+      responses:
+        '201':
+          description: Пост успешно создан
+
+  /posts/{id}:
+    patch:
+      summary: Редактировать публикацию
+      tags:
+        - Feed
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                content:
+                  type: string
+      responses:
+        '200':
+          description: Публикация обновлена
+
+    delete:
+      summary: Удалить публикацию
+      tags:
+        - Feed
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Публикация успешно удалена
+
+  # ------------------ МЕССЕНДЖЕР ------------------
+  /chats:
+    get:
+      summary: Получить список активных чатов текущего пользователя
+      tags:
+        - Chats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Список диалогов получен
+
+  /messages:
+    post:
+      summary: Отправить новое сообщение в чат (также дублируется через WebSocket)
+      tags:
+        - Chats
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - chat_id
+                - text
+              properties:
+                chat_id:
+                  type: string
+                  format: uuid
+                text:
+                  type: string
+                  example: "Здравствуйте, готова провести безопасную сделку по MacBook."
+                file_urls:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Сообщение успешно доставлено
+
+  /messages/{chatId}:
+    get:
+      summary: Получить историю сообщений для конкретного чата
+      tags:
+        - Chats
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: chatId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Список сообщений возвращен
+
+  # ------------------ МАРКЕТПЛЕЙС ------------------
+  /ads:
+    get:
+      summary: Поиск и фильтрация объявлений на маркетплейсе
+      tags:
+        - Marketplace
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Ключевые слова для поиска
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по категории (Техника, Авто, Недвижимость, Услуги, Хобби)
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по городу
+      responses:
+        '200':
+          description: Список объявлений получен
+
+    post:
+      summary: Создать новое объявление на маркетплейсе
+      tags:
+        - Marketplace
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - price
+                - category
+                - city
+              properties:
+                title:
+                  type: string
+                  example: MacBook Pro M3 Max 16”
+                description:
+                  type: string
+                  example: Новый, запечатанный. Идеален для NestJS разработчика.
+                price:
+                  type: number
+                  example: 320000
+                category:
+                  type: string
+                  example: Техника
+                city:
+                  type: string
+                  example: Москва
+                image_urls:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Объявление успешно размещено
+
+  /ads/{id}:
+    patch:
+      summary: Редактировать объявление
+      tags:
+        - Marketplace
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                price:
+                  type: number
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Объявление обновлено
+
+    delete:
+      summary: Удалить объявление
+      tags:
+        - Marketplace
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Объявление удалено
+
+  # ------------------ РАБОТА (ВАКАНСИИ И РЕЗЮМЕ) ------------------
+  /jobs:
+    get:
+      summary: Получить список вакансий компаний с фильтрами
+      tags:
+        - Jobs / Resumes
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Полнотекстовый поиск по названию или требованиям
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Отрасль (IT, HR, Sales, Marketing, Design, etc.)
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по городу
+      responses:
+        '200':
+          description: Список вакансий получен
+
+    post:
+      summary: Разместить новую вакансию от имени компании
+      tags:
+        - Jobs / Resumes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - salary
+                - city
+                - sector
+              properties:
+                title:
+                  type: string
+                  example: "Senior NestJS Backend Developer"
+                description:
+                  type: string
+                  example: "Ищем опытного бэкенд-инженера для масштабирования высоконагруженных микросервисов."
+                salary:
+                  type: number
+                  example: 350000
+                city:
+                  type: string
+                  example: "Москва"
+                sector:
+                  type: string
+                  example: "IT"
+                requirements:
+                  type: string
+                  example: "Опыт разработки на NestJS от 5 лет, PostgreSQL, Redis, RabbitMQ."
+      responses:
+        '201':
+          description: Вакансия успешно добавлена
+
+  /resumes:
+    get:
+      summary: Получить список резюме соискателей
+      tags:
+        - Jobs / Resumes
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список резюме получен
+
+    post:
+      summary: Опубликовать резюме соискателя
+      tags:
+        - Jobs / Resumes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - description
+                - salary
+                - city
+                - sector
+              properties:
+                title:
+                  type: string
+                  example: "Middle React / TypeScript Frontend Engineer"
+                description:
+                  type: string
+                  example: "Создание стильных веб-приложений Next.js 14, Tailwind, SVG."
+                salary:
+                  type: number
+                  example: 180000
+                city:
+                  type: string
+                  example: "Москва"
+                sector:
+                  type: string
+                  example: "IT"
+                requirements:
+                  type: string
+                  example: "React от 2 лет, Next.js, Redux, WebSocket."
+      responses:
+        '201':
+          description: Резюме успешно добавлено
+
+  # ------------------ AI АССИСТЕНТ ------------------
+  /ai/chat:
+    post:
+      summary: Задать вопрос AI-ассистенту EQUHUB
+      tags:
+        - AI Service
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  example: "Напиши привлекательное рекламное описание для PlayStation 5"
+      responses:
+        '200':
+          description: Сгенерированный ИИ ответ
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    example: "Продается игровая приставка нового поколения Sony PlayStation 5 в идеальном состоянии..."
+
+  /ai/image:
+    post:
+      summary: Генерация рекламного изображения на основе текстового описания
+      tags:
+        - AI Service
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+              properties:
+                prompt:
+                  type: string
+                  example: "Футуристичный офис будущего, неоновый свет"
+      responses:
+        '200':
+          description: Ссылка на сгенерированное изображение
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  image_url:
+                    type: string
+                    example: "https://minio.equhub.ru/ai-generated/futuristic-office.png"
+
+  /ai/analyze:
+    post:
+      summary: Автоматический контент-анализ и модерация текста объявления
+      tags:
+        - AI Service
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - text
+              properties:
+                text:
+                  type: string
+                  example: "Купите ноутбук прямо сейчас, легкие деньги, гарантирую обман!"
+      responses:
+        '200':
+          description: Результаты проверки модерации
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approved:
+                    type: boolean
+                    example: false
+                  suggested_category:
+                    type: string
+                    example: "Техника"
+                  reason:
+                    type: string
+                    example: "Найдено подозрительное слово: обман"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Передайте токен авторизации в заголовке `Authorization: Bearer <JWT_ACCESS_TOKEN>`.
