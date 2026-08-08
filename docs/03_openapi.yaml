@@ -1,0 +1,227 @@
+openapi: 3.0.3
+info:
+  title: EQUHUB API Specification
+  description: Полная OpenAPI 3.0 спецификация бэкенда единой цифровой платформы EQUHUB. Охватывает авторизацию (JWT HS256), маркетплейс, безопасные сделки Escrow и раздел работы.
+  version: 1.0.0
+servers:
+  - url: https://api.equhub.ru/api/v1
+    description: Продакшн сервер API Gateway
+  - url: http://localhost:8000/api/v1
+    description: Локальный сервер разработки
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123!
+                name:
+                  type: string
+                  example: Екатерина Смирнова
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  email:
+                    type: string
+                  name:
+                    type: string
+                  created_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Некорректные параметры или email уже занят
+
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя и выдача JWT
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123!
+      responses:
+        '200':
+          description: Успешный вход в систему
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    example: 900
+        '401':
+          description: Неверные учетные данные
+
+  /ads:
+    get:
+      summary: Получение списка объявлений маркетплейса
+      tags:
+        - Marketplace
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Текстовый поисковый запрос (полнотекстовый индекс)
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по названию категории (например, Техника)
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Город поиска
+      responses:
+        '200':
+          description: Успешное получение списка
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Listing'
+
+  /jobs:
+    get:
+      summary: Получение списка вакансий и резюме в разделе "Работа"
+      tags:
+        - Job Board
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, vacancy, resume]
+          description: Тип публикации (вакансия или резюме)
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Отрасль рынка (IT, HR, Sales, Design)
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Поисковой запрос по заголовку и требованиям
+      responses:
+        '200':
+          description: Успешный возврат списка вакансий и резюме
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        city:
+          type: string
+        category:
+          type: string
+        seller:
+          type: string
+        ai_score:
+          type: integer
+        image_url:
+          type: string
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [vacancy, resume]
+        title:
+          type: string
+        description:
+          type: string
+        salary:
+          type: number
+        city:
+          type: string
+        sector:
+          type: string
+        company:
+          type: string
+          nullable: true
+        requirements:
+          type: string
+          nullable: true
+        author:
+          type: string
