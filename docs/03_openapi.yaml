@@ -1,0 +1,382 @@
+openapi: 3.0.3
+info:
+  title: EQUHUB API Specification
+  description: Полная OpenAPI 3.0 спецификация бэкенда единой цифровой платформы EQUHUB. Охватывает авторизацию (JWT HS256), маркетплейс, безопасные сделки Escrow и раздел работы.
+  version: 1.0.0
+servers:
+  - url: https://api.equhub.ru/api/v1
+    description: Продакшн сервер API Gateway
+  - url: http://localhost:8000/api/v1
+    description: Локальный сервер разработки
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - name
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123!
+                name:
+                  type: string
+                  example: Екатерина Смирнова
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT Access Token для авторизации
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  user:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        format: uuid
+                        example: c78a05c4-4a41-479a-bc04-878950f14022
+                      email:
+                        type: string
+                        format: email
+                        example: katya@equhub.ru
+                      name:
+                        type: string
+                        example: Екатерина Смирнова
+        '400':
+          description: Некорректные параметры или email уже занят
+
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя и выдача JWT
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: katya@equhub.ru
+                password:
+                  type: string
+                  format: password
+                  example: P@ssw0rd123!
+      responses:
+        '200':
+          description: Успешный вход в систему
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                  token_type:
+                    type: string
+                    example: bearer
+                  expires_in:
+                    type: integer
+                    example: 900
+        '401':
+          description: Неверные учетные данные
+
+  /ads:
+    get:
+      summary: Получение списка объявлений маркетплейса
+      tags:
+        - Marketplace
+      parameters:
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Текстовый поисковый запрос (полнотекстовый индекс)
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Фильтр по названию категории (например, Техника)
+        - name: city
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Город поиска
+      responses:
+        '200':
+          description: Успешное получение списка
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: '#/components/schemas/Listing'
+
+  /ads/order:
+    post:
+      summary: Инициализация безопасной сделки Escrow
+      tags:
+        - Escrow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Обязательный UUID-ключ идемпотентности во избежание повторных списаний средств.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - ad_id
+              properties:
+                ad_id:
+                  type: string
+                  format: uuid
+                  example: l1
+      responses:
+        '201':
+          description: Сделка Escrow успешно инициализирована, средства заблокированы (hold)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EscrowDeal'
+        '400':
+          description: Ошибка валидации или недостаточно средств на кошельке
+        '401':
+          description: Требуется авторизация JWT
+
+  /escrow/ship:
+    post:
+      summary: Подтверждение отправки товара продавцом (Перевод на Шаг 3)
+      tags:
+        - Escrow
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - escrow_id
+              properties:
+                escrow_id:
+                  type: string
+                  format: uuid
+                  example: e1
+      responses:
+        '200':
+          description: Статус отправки успешно сохранен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: shipped
+                  step:
+                    type: integer
+                    example: 3
+        '400':
+          description: Неверный статус сделки для отправки
+        '401':
+          description: Не авторизован
+
+  /escrow/confirm:
+    post:
+      summary: Подтверждение получения товара покупателем и выплата из Escrow (Шаг 4)
+      tags:
+        - Escrow
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: X-Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Ключ идемпотентности для предотвращения двойных выплат.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - escrow_id
+              properties:
+                escrow_id:
+                  type: string
+                  format: uuid
+                  example: e1
+      responses:
+        '200':
+          description: Сделка завершена, деньги переведены на кошелек продавца
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: completed
+                  step:
+                    type: integer
+                    example: 4
+        '401':
+          description: Не авторизован
+
+  /jobs:
+    get:
+      summary: Получение списка вакансий и резюме в разделе "Работа"
+      tags:
+        - Job Board
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [all, vacancy, resume]
+          description: Тип публикации (вакансия или резюме)
+        - name: sector
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Отрасль рынка (IT, HR, Sales, Design)
+        - name: query
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Поисковой запрос по заголовку и требованиям
+      responses:
+        '200':
+          description: Успешный возврат списка вакансий и резюме
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 100
+                items:
+                  $ref: '#/components/schemas/Job'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Listing:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        price:
+          type: number
+        city:
+          type: string
+        category:
+          type: string
+        seller:
+          type: string
+        ai_score:
+          type: integer
+        image_url:
+          type: string
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [vacancy, resume]
+        title:
+          type: string
+        description:
+          type: string
+        salary:
+          type: number
+        city:
+          type: string
+        sector:
+          type: string
+        company:
+          type: string
+          nullable: true
+        requirements:
+          type: string
+          nullable: true
+        author:
+          type: string
+    EscrowDeal:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        price:
+          type: number
+        status:
+          type: string
+          enum: [created, hold, shipped, completed, dispute]
+        buyer:
+          type: string
+        seller:
+          type: string
+        step:
+          type: integer
+          minimum: 1
+          maximum: 4
