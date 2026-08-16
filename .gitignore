@@ -32,6 +32,16 @@ google-services.json
 # Android Profiling
 *.hprof
 
-# Node.js dependencies
+# Node.js & TypeScript dependencies & builds
 node_modules/
 .next/
+*.tsbuildinfo
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.venv/
+venv/
