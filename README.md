@@ -1,52 +1,452 @@
-# Hi there, I'm Mikola199 👋
+# EQUHUB — Единая цифровая платформа
 
-Welcome to my GitHub profile! I'm passionate about building interesting projects and contributing to the developer community.
+## Версия документа
 
-## 🚀 About Me
-
-I'm a developer interested in creating meaningful software and collaborating with others. I enjoy exploring new technologies and solving challenging problems.
-
-## 💻 What I Do
-
-- **Development**: Writing clean, maintainable code
-- **Projects**: Building applications and tools that solve real problems
-- **Learning**: Continuously exploring new technologies and best practices
-- **Collaboration**: Working with others to create great software
-
-## 🛠️ Tech Stack
-
-- **Languages**: [Add your primary languages here]
-- **Frameworks & Tools**: [Add your favorite frameworks and tools]
-- **Databases**: [Add technologies you work with]
-
-## 📫 Featured Projects
-
-Check out some of my recent and notable work:
-
-- **[Project Name]** - [Brief description]
-- **[Project Name]** - [Brief description]
-- **[Project Name]** - [Brief description]
-
-## 🎯 Current Focus
-
-- [What you're currently working on or interested in]
-
-## 📊 GitHub Stats
-
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=Mikola199&show_icons=true&theme=default)
-
-## 🤝 Let's Connect
-
-- 💼 **LinkedIn**: [Your LinkedIn URL]
-- 🐦 **Twitter**: [Your Twitter handle]
-- 💬 **Email**: [Your email]
-- 🌐 **Website**: [Your personal website]
-
-## 📝 Latest Blog Posts
-
-- [Blog post title](link)
-- [Blog post title](link)
+* Версия: 1.0
+* Статус: Проект
+* Тип документа: Software Requirements Specification (SRS)
+* Назначение: Полное техническое задание для разработки платформы
 
 ---
 
-*Feel free to explore my repositories and don't hesitate to reach out if you'd like to collaborate!*
+# 1. Цель проекта
+
+Создать масштабируемую цифровую платформу, объединяющую:
+
+* социальную сеть;
+* мессенджер;
+* маркетплейс товаров и услуг;
+* раздел вакансий;
+* безопасные сделки;
+* AI-помощника;
+* видеосвязь;
+* короткие видео;
+* внутренний кошелёк;
+* систему отзывов и рейтингов;
+* бизнес-инструменты для компаний и продавцов.
+
+---
+
+# 2. Основные модули
+
+## 2.1 Авторизация
+
+* регистрация;
+* вход;
+* OAuth;
+* двухфакторная аутентификация;
+* восстановление доступа;
+* управление устройствами;
+* журнал входов.
+
+---
+
+## 2.2 Пользовательский профиль
+
+* аватар;
+* обложка;
+* биография;
+* контакты;
+* интересы;
+* подписчики;
+* друзья;
+* рейтинг;
+* достижения;
+* приватность.
+
+---
+
+## 2.3 Социальная сеть
+
+* публикации;
+* комментарии;
+* реакции;
+* репосты;
+* хэштеги;
+* рекомендации;
+* группы;
+* сообщества;
+* мероприятия.
+
+---
+
+## 2.4 Мессенджер
+
+* личные сообщения;
+* групповые чаты;
+* каналы;
+* голосовые сообщения;
+* видеозвонки;
+* аудиозвонки;
+* обмен файлами;
+* исчезающие сообщения;
+* сквозное шифрование.
+
+---
+
+## 2.5 Marketplace
+
+* товары;
+* услуги;
+* автомобили;
+* недвижимость;
+* аренда;
+* поиск;
+* фильтры;
+* избранное;
+* отзывы;
+* безопасные сделки.
+
+---
+
+## 2.6 Работа
+
+* вакансии;
+* резюме;
+* компании;
+* отклики;
+* приглашения;
+* аналитика рынка труда.
+
+---
+
+## 2.7 AI
+
+* AI-ассистент;
+* генерация текста;
+* генерация изображений;
+* рекомендации;
+* анализ объявлений;
+* автоматическая модерация;
+* интеллектуальный поиск.
+
+---
+
+## 2.8 Видеосервис
+
+* короткие видео;
+* прямые эфиры;
+* рекомендации;
+* комментарии;
+* лайки;
+* подписки.
+
+---
+
+## 2.9 Кошелёк
+
+* баланс;
+* переводы;
+* безопасные сделки;
+* возвраты;
+* история операций.
+
+---
+
+## 2.10 Панель администратора
+
+* управление пользователями;
+* модерация;
+* аналитика;
+* управление контентом;
+* управление рекламой;
+* управление жалобами.
+
+---
+
+# 3. Архитектура
+
+## Frontend
+
+* Flutter
+* React
+* TypeScript
+
+## Backend
+
+* NestJS
+* Node.js
+
+## API Gateway
+
+* REST
+* GraphQL
+* WebSocket
+
+## Микросервисы
+
+* Auth Service
+* User Service
+* Feed Service
+* Chat Service
+* Marketplace Service
+* Vacancy Service
+* AI Service
+* Payment Service
+* Notification Service
+* Search Service
+* Analytics Service
+
+---
+
+# 4. База данных
+
+## PostgreSQL
+
+Основные сущности:
+
+* Users
+* Profiles
+* Posts
+* Comments
+* Reactions
+* Chats
+* Messages
+* Communities
+* MarketplaceAds
+* Categories
+* Favorites
+* Orders
+* EscrowTransactions
+* Wallets
+* Payments
+* Jobs
+* Resumes
+* Companies
+* Notifications
+* Reports
+* Roles
+* Permissions
+* AuditLogs
+
+---
+
+# 5. Поиск
+
+* Elasticsearch
+* полнотекстовый поиск;
+* поиск по карте;
+* рекомендации;
+* AI-поиск.
+
+---
+
+# 6. Хранилище файлов
+
+* MinIO
+* CDN
+* резервные копии;
+* хранение изображений и видео.
+
+---
+
+# 7. Кэширование
+
+* Redis
+* кэш профилей;
+* кэш ленты;
+* кэш поиска;
+* очереди задач.
+
+---
+
+# 8. Очереди сообщений
+
+* RabbitMQ
+* обработка уведомлений;
+* индексация поиска;
+* обработка медиа;
+* AI-задачи.
+
+---
+
+# 9. Безопасность
+
+* JWT;
+* Refresh Token;
+* OAuth 2.0;
+* двухфакторная аутентификация;
+* ограничение частоты запросов;
+* защита API;
+* журналирование;
+* шифрование данных;
+* резервное копирование.
+
+---
+
+# 10. API
+
+## Авторизация
+
+* POST /auth/register
+* POST /auth/login
+* POST /auth/logout
+* POST /auth/refresh
+
+## Пользователи
+
+* GET /users
+* GET /users/{id}
+* PATCH /users/{id}
+
+## Лента
+
+* GET /feed
+* POST /posts
+* PATCH /posts/{id}
+* DELETE /posts/{id}
+
+## Чаты
+
+* GET /chats
+* POST /messages
+* GET /messages/{chatId}
+
+## Marketplace
+
+* GET /ads
+* POST /ads
+* PATCH /ads/{id}
+* DELETE /ads/{id}
+
+## Работа
+
+* GET /jobs
+* POST /jobs
+* GET /resumes
+* POST /resumes
+
+## AI
+
+* POST /ai/chat
+* POST /ai/image
+* POST /ai/analyze
+
+---
+
+# 11. UI/UX
+
+Экранные разделы:
+
+* Splash
+* Login
+* Registration
+* Home
+* Feed
+* Marketplace
+* Product Card
+* Chat
+* Video
+* Wallet
+* AI
+* Notifications
+* Search
+* Profile
+* Settings
+* Admin Panel
+
+---
+
+# 12. Инфраструктура
+
+* Docker
+* Docker Compose
+* Kubernetes
+* Nginx
+* HTTPS
+* CI/CD
+* мониторинг
+* логирование
+* автоматическое масштабирование
+
+---
+
+# 13. Дорожная карта
+
+## Этап 1 (MVP)
+
+* авторизация;
+* профили;
+* публикации;
+* мессенджер;
+* маркетплейс;
+* поиск.
+
+## Этап 2
+
+* видеозвонки;
+* AI;
+* кошелёк;
+* безопасные сделки;
+* вакансии.
+
+## Этап 3
+
+* короткие видео;
+* бизнес-кабинеты;
+* аналитика;
+* рекламная платформа;
+* рекомендательная система.
+
+## Этап 4
+
+* международная локализация;
+* открытый API;
+* экосистема приложений;
+* SDK для разработчиков;
+* интеграции с внешними сервисами.
+
+---
+
+# 14. Репозиторий (предлагаемая структура)
+
+```text
+/apps
+  /mobile
+  /web
+  /admin
+
+/services
+  /auth
+  /users
+  /feed
+  /chat
+  /marketplace
+  /jobs
+  /wallet
+  /payments
+  /notifications
+  /search
+  /ai
+
+/packages
+  /ui
+  /shared
+  /config
+
+/infrastructure
+  /docker
+  /kubernetes
+  /terraform
+
+/docs
+  /architecture
+  /database
+  /api
+  /design
+```
+
+---
+
+# 15. Следующие документы
+
+1. Полная ER-диаграмма базы данных.
+2. UML-диаграммы модулей и сервисов.
+3. OpenAPI (Swagger) спецификация.
+4. Полный дизайн экранов в Figma.
+5. Дизайн-система (цвета, типографика, компоненты).
+6. CI/CD-конвейер.
+7. Документация по развёртыванию.
+8. План тестирования (Unit, Integration, E2E).
+9. План информационной безопасности.
+10. Руководство администратора и разработчика.
